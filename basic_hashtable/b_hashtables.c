@@ -121,8 +121,19 @@ void hash_table_remove(BasicHashTable *ht, char *key)
  ****/
 char *hash_table_retrieve(BasicHashTable *ht, char *key)
 {
+  char *rv = NULL;
+  int index;
   printf("retreiving %s\n", key);
-  return NULL;
+  // get index of key
+  index = hash(key, ht->capacity);
+  // get storage[index]
+  rv = ht->storage[index]->value;
+  // if NULL is there print warning
+  if (rv == NULL)
+  {
+    printf("no value corresponding to %s.\n", key);
+  }
+  return rv;
 }
 
 /****
