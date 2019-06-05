@@ -160,6 +160,17 @@ char *hash_table_retrieve(BasicHashTable *ht, char *key)
 void destroy_hash_table(BasicHashTable *ht)
 {
   printf("destroying hash table\n");
+  for (int i = 0; i < ht->capacity; i++)
+  {
+    // look through all of ht's storage, free any pairs stored there
+    if (ht->storage[i] != NULL)
+    {
+      destroy_pair(ht->storage[i]);
+    }
+  }
+  // free ht itself
+  free(ht->storage);
+  free(ht);
 }
 
 #ifndef TESTING
