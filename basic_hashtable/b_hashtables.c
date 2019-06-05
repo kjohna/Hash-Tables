@@ -112,6 +112,18 @@ void hash_table_insert(BasicHashTable *ht, char *key, char *value)
 void hash_table_remove(BasicHashTable *ht, char *key)
 {
   printf("removing %s\n", key);
+  // get index of key
+  int index = hash(key, ht->capacity);
+  // if nothing is there print warning, done
+  if (ht->storage[index] == NULL)
+  {
+    printf("nothing to remove for %s.\n", key);
+    return;
+  }
+  // else destroy pair (frees malloc'd memory for the pair)
+  destroy_pair(ht->storage[index]);
+  // set storage[index] to NULL
+  ht->storage[index] = NULL;
 }
 
 /****
@@ -126,12 +138,16 @@ char *hash_table_retrieve(BasicHashTable *ht, char *key)
   printf("retreiving %s\n", key);
   // get index of key
   index = hash(key, ht->capacity);
-  // get storage[index]
-  rv = ht->storage[index]->value;
-  // if NULL is there print warning
-  if (rv == NULL)
+  // check if there's anything at storage[index]
+  if (ht->storage[index] == NULL)
   {
+    // if NULL is there print warning
     printf("no value corresponding to %s.\n", key);
+  }
+  else
+  {
+    // get storage[index]
+    rv = ht->storage[index]->value;
   }
   return rv;
 }
