@@ -9,7 +9,8 @@
   More specifically, the `next` field is a pointer pointing to the the 
   next `LinkedPair` in the list of `LinkedPair` nodes. 
  */
-typedef struct LinkedPair {
+typedef struct LinkedPair
+{
   char *key;
   char *value;
   struct LinkedPair *next;
@@ -18,7 +19,8 @@ typedef struct LinkedPair {
 /*
   Hash table with linked pairs.
  */
-typedef struct HashTable {
+typedef struct HashTable
+{
   int capacity;
   LinkedPair **storage;
 } HashTable;
@@ -41,7 +43,8 @@ LinkedPair *create_pair(char *key, char *value)
  */
 void destroy_pair(LinkedPair *pair)
 {
-  if (pair != NULL) {
+  if (pair != NULL)
+  {
     free(pair->key);
     free(pair->value);
     free(pair);
@@ -57,9 +60,10 @@ unsigned int hash(char *str, int max)
 {
   unsigned long hash = 5381;
   int c;
-  unsigned char * u_str = (unsigned char *)str;
+  unsigned char *u_str = (unsigned char *)str;
 
-  while ((c = *u_str++)) {
+  while ((c = *u_str++))
+  {
     hash = ((hash << 5) + hash) + c;
   }
 
@@ -74,7 +78,9 @@ unsigned int hash(char *str, int max)
 HashTable *create_hash_table(int capacity)
 {
   HashTable *ht;
-
+  ht = malloc(sizeof(HashTable));
+  ht->capacity = capacity;
+  ht->storage = calloc(capacity, sizeof(LinkedPair *));
   return ht;
 }
 
@@ -89,7 +95,46 @@ HashTable *create_hash_table(int capacity)
  */
 void hash_table_insert(HashTable *ht, char *key, char *value)
 {
-
+  // compute index
+  int index = hash(key, ht->capacity);
+  // create a linked pair with the new values
+  LinkedPair *new_pair = create_pair(key, value);
+  // if nothing is at index, place new_pair there
+  if (ht->storage[index] == NULL)
+  {
+    ht->storage[index] = new_pair;
+  }
+  // else check if key matches
+  else
+  {
+    // if key matches, print warning & replace value
+    if (ht->storage[index]->key == key)
+    {
+      printf("warning: duplicate key, replacing %s with %s.\n", ht->storage[index]->value, value);
+      ht->storage[index]->value = value;
+    }
+    // else while there is a 'next'...
+    else
+    {
+      LinkedPair *curr_pair = ht->storage[index];
+      LinkedPair *next_pair = ht->storage[index]->next;
+      while (next_pair)
+      {
+        // if key matches, print warning & replace value
+        if (next_pair->key == key)
+        {
+          printf("warning: duplicate key, replacing %s with %s.\n", next_pair->value, value);
+          curr_pair->next = new_pair;
+          return;
+        }
+        // otherwise check next
+        curr_pair = next_pair;
+        next_pair = curr_pair->next;
+      }
+      // if we got to next == NULL w/o storing new pair, put the new_pair there
+      curr_pair->next = new_pair;
+    }
+  }
 }
 
 /*
@@ -102,7 +147,6 @@ void hash_table_insert(HashTable *ht, char *key, char *value)
  */
 void hash_table_remove(HashTable *ht, char *key)
 {
-
 }
 
 /*
@@ -125,7 +169,6 @@ char *hash_table_retrieve(HashTable *ht, char *key)
  */
 void destroy_hash_table(HashTable *ht)
 {
-
 }
 
 /*
@@ -143,7 +186,6 @@ HashTable *hash_table_resize(HashTable *ht)
   return new_ht;
 }
 
-
 #ifndef TESTING
 int main(void)
 {
@@ -153,15 +195,15 @@ int main(void)
   hash_table_insert(ht, "line_2", "Filled beyond capacity\n");
   hash_table_insert(ht, "line_3", "Linked list saves the day!\n");
 
-  printf("%s", hash_table_retrieve(ht, "line_1"));
-  printf("%s", hash_table_retrieve(ht, "line_2"));
-  printf("%s", hash_table_retrieve(ht, "line_3"));
+  // printf("%s", hash_table_retrieve(ht, "line_1"));
+  // printf("%s", hash_table_retrieve(ht, "line_2"));
+  // printf("%s", hash_table_retrieve(ht, "line_3"));
 
-  int old_capacity = ht->capacity;
-  ht = hash_table_resize(ht);
-  int new_capacity = ht->capacity;
+  // int old_capacity = ht->capacity;
+  // ht = hash_table_resize(ht);
+  // int new_capacity = ht->capacity;
 
-  printf("\nResizing hash table from %d to %d.\n", old_capacity, new_capacity);
+  // printf("\nResizing hash table from %d to %d.\n", old_capacity, new_capacity);
 
   destroy_hash_table(ht);
 
