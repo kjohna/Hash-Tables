@@ -203,6 +203,41 @@ char *hash_table_retrieve(HashTable *ht, char *key)
  */
 void destroy_hash_table(HashTable *ht)
 {
+  // seems like a generous estimate of worst case?
+  // ..ht should resize before this
+  int max_depth = ht->capacity * 2;
+  char **stack = malloc(max_depth * sizeof(LinkedPair *));
+  int stack_count = 0;
+  // iterate thru ht's storage
+  for (int i = 0; i < ht->capacity; i++)
+  {
+    // if there is no 'next', clear to free that bit
+    if (ht->storage[i]->next == NULL)
+    {
+      destroy_pair(ht->storage[i]);
+    }
+    // else travel down the linked pairs, pushing into stack
+    else
+    {
+      LinkedPair *curr_pair = ht->storage[i];
+      while (curr_pair->next)
+      {
+        stack[stack_count] = curr_pair;
+        curr_pair = curr_pair->next;
+      }
+      // put final pair on stack
+      stack[stack_count] = curr_pair;
+      stack_count++;
+      // then free memory from bottom up
+      while (stack_count > -1)
+      {
+        destroy_pair(stack[stack_count]);
+        stack_count--;
+      }
+    }
+  }
+  // finally free ht
+  free(ht);
 }
 
 /*
